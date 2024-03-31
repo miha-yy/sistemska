@@ -95,5 +95,43 @@ class articles_controller
         require_once('views/articles/edit.php');
     }
 
-   
+    function update(){
+        if(!isset($_GET['id'])){
+            header("Location: /pages/error");
+            die();
+        }
+        $article = Article::find($_GET['id']);
+        //Preveri če so vsi podatki izpolnjeni
+        if(empty($_POST["title"]) || empty($_POST["abstract"]) || empty($_POST["text"])){
+            header("Location: /articles/edit?id=" . $article->id . "&error=1");
+        }
+        else if($article->user->id!==$_SESSION["USER_ID"]){
+            header("Location: /articles/edit?id=" . $article->id . "&error=2");
+        }
+        //Podatki so pravilno izpolnjeni, registriraj uporabnika
+        else if($article->update($_POST["title"], $_POST["abstract"], $_POST["text"])){
+            header("Location: /articles/list");
+        }
+        //Prišlo je do napake pri registraciji
+        else{
+            header("Location: /articles/edit?id=" . $article->id . "&error=3");
+        }
+        die();
+    }
+
+    function store(){
+        //Preveri če so vsi podatki izpolnjeni
+        if(empty($_POST["title"]) || empty($_POST["abstract"]) || empty($_POST["text"])){
+            header("Location: /articles/create?error=1");
+        }
+        //Podatki so pravilno izpolnjeni, registriraj uporabnika
+        else if(Article::create($_POST["title"], $_POST["abstract"], $_POST["text"])){
+            header("Location: /");
+        }
+        //Prišlo je do napake pri registraciji
+        else{
+            header("Location: /articles/create?error=2"); 
+        }
+        die();
+    }
 }
