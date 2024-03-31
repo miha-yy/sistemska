@@ -63,6 +63,51 @@ class users_controller
         require_once('views/users/edit.php');
     }
 
+    function edit_password(){
+        if(!isset($_SESSION["USER_ID"])){
+            header("Location: /pages/error");
+            die();
+        }
+        $user = User::find($_SESSION["USER_ID"]);
+        $error = "";
+        if(isset($_GET["error"])){
+            switch($_GET["error"]){
+                case 1: $error = "Izpolnite vse podatke"; break;
+                case 2: $error = "Gesli se ne ujemata."; break;
+                case 3: $error = "Nepravilno staro geslo."; break;
+                default: $error = "Prišlo je do napake med urejanjem uporabnika.";
+            }
+        }
+        require_once('views/users/edit_password.php');
+    }
+
+    function update_password(){
+        if(!isset($_SESSION["USER_ID"])){
+            header("Location: /pages/error");
+            die();
+        }
+        $user = User::find($_SESSION["USER_ID"]);
+        //Preveri če so vsi podatki izpolnjeni
+        if(empty($_POST["password"]) || empty($_POST["new_password"]) || empty($_POST["repeat_password"])){
+            header("Location: /users/edit_password?error=1"); 
+        }
+        else if($_POST["new_password"] != $_POST["repeat_password"]){
+            header("Location: /users/edit_password?error=2"); 
+        }
+        else if($user->authenticate($user->username,$_POST["password"]) === -1){
+            header("Location: /users/edit_password?error=3"); 
+        }
+        //Podatki so pravilno izpolnjeni, registriraj uporabnika
+        else if($user->update_password($_POST["new_password"])){
+            header("Location: /");
+        }
+        //Prišlo je do napake pri registraciji
+        else{
+            header("Location: /users/edit_password?error=4"); 
+        }
+        die();
+    }
+
     function update(){
         if(!isset($_SESSION["USER_ID"])){
             header("Location: /pages/error");
@@ -86,5 +131,15 @@ class users_controller
             header("Location: /users/edit?error=3"); 
         }
         die();
+    }
+
+    public function show()
+    {
+        if (!isset($_GET['id'])) {
+            return call('pages', 'error');
+        }
+        //drugače najdemo oglas in ga prikažemo
+        $user = User::find($_GET['id']);
+        require_once('views/users/show.php');
     }
 }
