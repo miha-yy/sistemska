@@ -8,6 +8,7 @@
 */
 
 require_once 'users.php'; // Vključimo model za uporabnike
+require_once 'comments.php'; // Vključimo model za uporabnike
 
 class Article
 {
@@ -17,6 +18,7 @@ class Article
     public $text;
     public $date;
     public $user;
+    public $comments;
 
     // Konstruktor
     public function __construct($id, $title, $abstract, $text, $date, $user_id)
@@ -27,6 +29,7 @@ class Article
         $this->text = $text;
         $this->date = $date;
         $this->user = User::find($user_id); //naložimo podatke o uporabniku
+        $this->comments = Comment::find_all_comments($id); //naložimo podatke o uporabniku
     }
 
     // Metoda, ki iz baze vrne vse novice
@@ -34,6 +37,19 @@ class Article
     {
         $db = Db::getInstance(); // pridobimo instanco baze
         $query = "SELECT * FROM articles;"; // pripravimo query
+        $res = $db->query($query); // poženemo query
+        $articles = array();
+        while ($article = $res->fetch_object()) {
+            // Za vsak rezultat iz baze ustvarimo objekt (kličemo konstuktor) in ga dodamo v array $articles
+            array_push($articles, new Article($article->id, $article->title, $article->abstract, $article->text, $article->date, $article->user_id));
+        }
+        return $articles;
+    }
+
+    public static function my_articles()
+    {
+        $db = Db::getInstance(); // pridobimo instanco baze
+        $query = "SELECT * FROM articles WHERE user_id='" . $_SESSION["USER_ID"] . "';"; // pripravimo query
         $res = $db->query($query); // poženemo query
         $articles = array();
         while ($article = $res->fetch_object()) {
@@ -54,5 +70,44 @@ class Article
             return new Article($article->id, $article->title, $article->abstract, $article->text, $article->date, $article->user_id);
         }
         return null;
+    }
+
+    public static function delete($id)
+    {
+        $db = Db::getInstance();
+        $id = mysqli_real_escape_string($db, $id);
+        $query = "DELETE FROM articles WHERE id = '$id';";
+        $res = $db->query($query);
+        return null;
+    }
+
+    public static function create($title, $abstract, $text){
+        $db = Db::getInstance();
+        $title = mysqli_real_escape_string($db, $title);
+        $abstract = mysqli_real_escape_string($db, $abstract);
+        $text = mysqli_real_escape_string($db, $text);
+        $date = date('Y-m-d H:i:s');
+        $query = "INSERT INTO articles (title, abstract, text, date, user_id) VALUES ('$title', '$abstract', '$text', '$date', '" . $_SESSION["USER_ID"] . "');";
+        if($db->query($query)){
+            return true;
+        }
+        else{
+            return false;
+        } 
+    }
+
+    public function update($title, $abstract, $text){
+        $db = Db::getInstance();
+        $title = mysqli_real_escape_string($db, $title);
+        $abstract = mysqli_real_escape_string($db, $abstract);
+        $text = mysqli_real_escape_string($db, $text);
+        $id = $this->id;
+        $query = "UPDATE articles SET title='$title', abstract='$abstract', text='$text' WHERE id=$id LIMIT 1;";
+        if($db->query($query)){
+            return true;
+        }
+        else{
+            return false;
+        } 
     }
 }
