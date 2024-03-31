@@ -27,13 +27,15 @@ $controllers = array(
   'pages' => ['error'],
   'users' => ['create', 'store'],
   'auth' => ['login', 'authenticate'],
-  'articles' => ['index', 'show']
+  'articles' => ['index', 'show', 'store'],
+  'comments' => ['create', 'store']
 );
 // Če je prijavljen, mu dovolimo še urejanje profila, odjavo in objavo novic
 if(isset($_SESSION["USER_ID"])){
-  $controllers['users'] = array_merge($controllers['users'], ['edit', 'update']);
+  $controllers['users'] = array_merge($controllers['users'], ['edit', 'update', 'show', 'edit_password', 'update_password']);
   $controllers['auth'] = array_merge($controllers['auth'], ['logout']);
-  $controllers['articles'] = array_merge($controllers['articles'], ['create']); // TODO: 'list', 'store', 'edit', 'update', 'delete'
+  $controllers['articles'] = array_merge($controllers['articles'], ['create'], ['list'], ['store'], ['edit'], ['update'], ['delete']);
+  $controllers['comments'] = array_merge($controllers['comments'], ['create'], ['store']);
 }
 
 // Preverimo, če zahteva kliče controller in akcijo iz zgornjega seznama
