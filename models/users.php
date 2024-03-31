@@ -12,14 +12,19 @@ class User
     public $username;
     public $email;
     public $password;
+    public $article_count;
+    public $comment_count;
+
 
     // Konstruktor
-    public function __construct($id, $username, $email, $password)
+    public function __construct($id, $username, $email, $password, $article_count, $comment_count)
     {
         $this->id = $id;
         $this->username = $username;
         $this->email = $email;
         $this->password = $password;
+        $this->article_count = $article_count;
+        $this->comment_count = $comment_count;
     }
 
     // Metoda, ki vrne uporabnika z določenim ID-jem iz baze
@@ -30,7 +35,15 @@ class User
         $query = "SELECT * FROM users WHERE id = '$id';";
         $res = $db->query($query);
         if ($user = $res->fetch_object()) {
-            return new User($user->id, $user->username, $user->email, $user->password);
+            $article_query = "SELECT COUNT(*) AS article_count FROM articles WHERE user_id = '$id';";
+            $article_res = $db->query($article_query);
+            $article_count = $article_res->fetch_object()->article_count;
+    
+            $comment_query = "SELECT COUNT(*) AS comment_count FROM comments WHERE user_id = '$id';";
+            $comment_res = $db->query($comment_query);
+            $comment_count = $comment_res->fetch_object()->comment_count;
+    
+            return new User($user->id, $user->username, $user->email, $user->password, $article_count, $comment_count);
         }
         return null;
     }
@@ -55,6 +68,18 @@ class User
         $email = mysqli_real_escape_string($db, $email);
         $pass = password_hash($password, PASSWORD_DEFAULT);
         $query = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$pass');";
+        if($db->query($query)){
+            return true;
+        }
+        else{
+            return false;
+        } 
+    }
+
+    public static function update_password($password){
+        $db = Db::getInstance();
+        $pass = password_hash($password, PASSWORD_DEFAULT);
+        $query = "UPDATE users SET password ='$pass';";
         if($db->query($query)){
             return true;
         }
