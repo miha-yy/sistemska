@@ -27,7 +27,7 @@ USE news;
 -- --------------------------------------------------------
 
 --
--- Struktura tabele `articles`
+-- Struktura tabele articles
 --
 
 CREATE TABLE `articles` (
