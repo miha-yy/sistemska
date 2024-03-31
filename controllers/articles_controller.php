@@ -79,5 +79,21 @@ class articles_controller
         require_once ('controllers/comments_controller.php');
     }
 
+    function edit(){
+        if (!isset($_GET['id'])) {
+            return call('pages', 'error');
+        }
+        $article = Article::find($_GET['id']);
+        $error = "";
+        if(isset($_GET["error"])){
+            switch($_GET["error"]){
+                case 1: $error = "Izpolnite vse podatke"; break;
+                case 2: $error = "Nimate pravic do tega"; break;
+                default: $error = "Prišlo je do napake med urejanjem uporabnika.";
+            }
+        }
+        require_once('views/articles/edit.php');
+    }
 
+   
 }
